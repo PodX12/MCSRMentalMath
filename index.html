@@ -96,9 +96,11 @@
         var questions = [];
         var questionCount = 15;
         var currentQuestion = 0;
+        var seconds = 0;
 
         function startTest() {
             currentQuestion = 0;
+            seconds = 0;
             questions = [];
 
             for (var i = 0; i < questionCount; i++) {
@@ -124,7 +126,6 @@
             });
         }
 
-        var seconds = 0;
         var timeCounter;
         function startTimer() {
             var timeCounter = setTimeout(function () {
@@ -273,7 +274,7 @@
 
         </ul>
 
-        <button onclick="startTest()">
+        <button onclick="location.reload()">
             New Test
         </button>
     </div>
