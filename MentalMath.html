@@ -1,0 +1,286 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>MC Mental Math</title>
+    <meta name="description" content="Minecraft Speedrun Tools">
+    <meta name="author" content="PodX12">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+
+    <style>
+        * {
+            text-align: center;
+            font-family: Arial;
+            background-color: #222A36;
+            color: #ccc;
+            font-size: 1.2rem;
+        }
+
+        .question {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+        }
+
+        #qlabel {
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+
+        #var1,
+        #var2 {
+            font-size: 2.2rem;
+        }
+
+        #details {
+            margin-top: 20px;
+        }
+
+        #answer:focus,
+        #answer {
+            border: none;
+            border-bottom: 1px solid #ccc;
+            font-size: 2.2rem;
+            outline: none;
+            max-width: 500px;
+        }
+
+        .green-text {
+            color: green;
+        }
+
+        .red-text {
+            color: red;
+        }
+
+        button {
+            padding: 20px 100px;
+            margin-top: 100px;
+            border: none;
+            background-color: green;
+            font-size: 4rem;
+            text-transform: uppercase;
+        }
+
+        #test {
+            margin-top: 50px;
+        }
+
+        #results{
+            display: none;
+        }
+
+        #summary {
+            display: none;
+            margin: auto;
+            margin-top: 50px;
+            font-size: 2.2rem;
+            border-bottom: 1px solid;
+            max-width: 600px;
+            padding-bottom: 20px;
+        }
+
+        #result-list li{
+            padding: 10px 0;
+        }
+    </style>
+
+    <script>
+        var questions = [];
+        var questionCount = 15;
+        var currentQuestion = 0;
+
+        function startTest() {
+            currentQuestion = 0;
+            questions = [];
+
+            for (var i = 0; i < questionCount; i++) {
+                questions.push(newQuestion())
+            }
+
+            nextQuestion();
+            $("#test").show();
+            $("#results").hide();
+            $(".info").hide();
+            $("#summary").hide();
+
+            startTimer();
+
+            $("#answer").on('keypress', function (e) {
+                if (e.which == 13) {
+                    var question = questions[currentQuestion - 1];
+                    question.yourAnswer = $("#answer").val();
+                    question.isCorrect = question.yourAnswer == question.answer;
+                    $("#answer").val("");
+                    nextQuestion();
+                }
+            });
+        }
+
+        var seconds = 0;
+        var timeCounter;
+        function startTimer() {
+            var timeCounter = setTimeout(function () {
+                seconds++;
+                $("#details").text(`Question ${currentQuestion}/${questionCount} | Seconds: ${seconds}`);
+                startTimer();
+            }, 1000);
+        }
+
+        function endTimer() {
+            clearTimeout(timeCounter);
+        }
+
+        function endTest() {
+            endTimer();
+
+            $("#test").hide();
+            $("#results").show();
+            $("#summary").show();
+            $("#result-list").html("")
+
+            var correctCount = 0;
+            for (var i = 0; i < questions.length; i++) {
+                var q = questions[i];
+                $("#result-list")
+                    .append(
+            `<li>Question ${i+1}: ${q.question} ${q.var1} ${q.var2} <br> <span class="${q.isCorrect ? "green-text" : "red-text"}">Your Answer: ${q.yourAnswer} | Correct Answer: ${q.answer}</span></li>`);
+                if (q.isCorrect)
+                    correctCount++;
+            }
+
+            $("#summary").html(`Correct Answers: ${correctCount} of ${questionCount} <br>Time: ${seconds} seconds`);
+        }
+
+        function nextQuestion() {
+            if (currentQuestion + 1 > questionCount) {
+                endTest();
+                return
+            }
+
+            currentQuestion++;
+
+            var question = questions[currentQuestion - 1];
+
+            $("#qlabel").text(question.question);
+            $("#var1").text(question.var1);
+            $("#var2").text(question.var2);
+
+            $("#details").text(`Question ${currentQuestion}/${questionCount} | Seconds: ${seconds}`);
+        }
+
+
+        function newQuestion() {
+            var questionType = Math.floor(Math.random() * 2) + 1;
+
+            switch (questionType) {
+                case 1:
+                    return newAngleQuestion();
+                case 2:
+                    return newDistanceQuestion();
+            }
+        }
+
+        function newAngleQuestion() {
+            var angle1 = Math.floor(Math.random() * 1800) + 1;
+            var angle2 = randBool()
+                ? angle1 + Math.floor(Math.random() * 70) + 1
+                : angle1 - Math.floor(Math.random() * 70) + 1;
+
+            if (randBool()) {
+                angle1 = -Math.abs(angle1);
+                angle2 = -Math.abs(angle2);
+            }
+
+            return {
+                question: "What's the difference between:",
+                var1: angle1 / 10.0,
+                var2: angle2 / 10.0,
+                answer: angle1 > angle2
+                    ? (angle1 - angle2) / 10.0
+                    : (angle2 - angle1) / 10.0
+            }
+        }
+
+        function newDistanceQuestion() {
+            var dist1 = Math.floor(Math.random() * 180) + 20;
+            var dist2 = Math.floor(Math.random() * 180) + 15;
+
+            dist1 = randBool() ? dist1 : -Math.abs(dist1);
+            dist2 = randBool() ? dist2 : -Math.abs(dist2);
+
+            return {
+                question: "Add these 2 numbers together:",
+                var1: dist1,
+                var2: dist2,
+                answer: dist1 + dist2
+            }
+        }
+
+        function randBool() {
+            return (Math.floor(Math.random() * 2) + 1) == 1;
+        }
+    </script>
+</head>
+
+<body>
+    <div class="info">
+        <h1>MCSR Mental Math</h1>
+
+        <div id="base-info">
+            This is a quick tool to help you practice mental math using similar looking arithmetic calculations to what
+            you would
+            have in triangulation
+            <br><br>
+            The following test is 15 questions and cosists of angle changes and coordinate differences.
+            <br><br>
+            Estimated time 120 seconds
+        </div>
+        <button onclick="startTest()">
+            Start Test
+        </button>
+    </div>
+
+
+    <div id="test" style="display: none;">
+        <div class="question">
+            <div id="qlabel"></div>
+            <span id="var1"></span>
+            <span id="var2"></span>
+        </div>
+
+        <div>
+            <input type="text" placeholder="Your Answer" id="answer" autocomplete="off" />
+        </div>
+
+        <div id="details">
+        </div>
+    </div>
+
+
+    <div id="summary">
+
+    </div>
+    <div id="results">
+        <ul id="result-list">
+
+        </ul>
+
+        <button onclick="startTest()">
+            New Test
+        </button>
+    </div>
+
+
+</body>
+
+</html>
