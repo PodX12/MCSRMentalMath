@@ -141,11 +141,15 @@
 
         function endTest() {
             endTimer();
-
+            
             $("#test").hide();
+            $("#result-list").html("")
+            if(seconds < 5){
+                $("#macro-users").show();
+                return
+            }
             $("#results").show();
             $("#summary").show();
-            $("#result-list").html("")
 
             var correctCount = 0;
             for (var i = 0; i < questions.length; i++) {
@@ -277,6 +281,10 @@
         <button onclick="location.reload()">
             New Test
         </button>
+    </div>
+    
+    <div id="macro-users" style="display: none;">
+        <img src="https://i.ibb.co/3yvtcZ5/Ed9-LIf-DX0-AEXmdc.jpg" />
     </div>
 
 
